@@ -1,0 +1,31 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: ms-gateway
+  cloud:
+    gateway:
+      routes:
+        - id: ms-autenticacion
+          uri: http://localhost:8081
+          predicates:
+            - Path=/api/auth/**
+        - id: ms-ordenes
+          uri: http://localhost:8082
+          predicates:
+            - Path=/api/ordenes/**
+        - id: ms-inventario
+          uri: http://localhost:8083
+          predicates:
+            - Path=/api/productos/**
+        - id: ms-picking-despacho
+          uri: http://localhost:8084
+          predicates:
+            - Path=/api/picking/**
+
+# NOTA (esqueleto minimo): este archivo define el enrutamiento interno del Spring Cloud Gateway
+# tal como aparece en el diagrama de arquitectura. La validacion de JWT (RBAC) que tambien se
+# muestra en el diagrama se implementaria como un GlobalFilter de Spring Cloud Gateway que
+# verifique la firma del token emitido por ms-autenticacion antes de reenviar la peticion; se deja
+# como siguiente paso de la version funcional completa (ver README de este modulo).
