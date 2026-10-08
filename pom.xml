@@ -4,6 +4,7 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
+    <!-- Spring Boot define las versiones de las dependencias y plugins de abajo -->
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
@@ -13,20 +14,24 @@
 
     <groupId>com.bodeganube</groupId>
     <artifactId>ms-gateway</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <version>1.0.0</version>
     <name>ms-gateway</name>
-    <description>Spring Cloud Gateway: enrutamiento interno y punto de validacion de JWT (RBAC) - Caso BodegaNube (JVY0101)</description>
+    <description>Spring Cloud Gateway: enrutamiento interno, autenticacion M2M del webhook y punto de validacion de JWT - Caso BodegaNube (JVY0101)</description>
 
     <properties>
         <java.version>17</java.version>
+        <!-- Version de Spring Cloud compatible con Spring Boot 3.2 -->
         <spring-cloud.version>2023.0.1</spring-cloud.version>
     </properties>
 
     <dependencies>
+        <!-- Spring Cloud Gateway: servidor reactivo (WebFlux + Netty) que enruta hacia los microservicios -->
         <dependency>
             <groupId>org.springframework.cloud</groupId>
             <artifactId>spring-cloud-starter-gateway</artifactId>
         </dependency>
+
+        <!-- Pruebas: JUnit 5, AssertJ y WebTestClient -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
@@ -34,6 +39,7 @@
         </dependency>
     </dependencies>
 
+    <!-- Importa las versiones de Spring Cloud (no agrega dependencias por si solo) -->
     <dependencyManagement>
         <dependencies>
             <dependency>
@@ -47,7 +53,10 @@
     </dependencyManagement>
 
     <build>
+        <!-- Nombre fijo del artefacto: target/ms-gateway.jar -->
+        <finalName>${project.artifactId}</finalName>
         <plugins>
+            <!-- Empaqueta un .jar ejecutable que se levanta con: java -jar target/ms-gateway.jar -->
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
