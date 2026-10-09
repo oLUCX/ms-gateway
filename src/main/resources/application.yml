@@ -9,6 +9,17 @@ spring:
       # La URI de cada microservicio se puede cambiar con una variable de entorno
       # (en AWS sera la del balanceador interno de la VPC).
       routes:
+        # Ingesta de ventas desde la AWS Lambda (machine-to-machine). La Lambda no tiene un JWT de usuario,
+        # asi que se autentica con la API key de la cabecera X-Api-Key (filtro ApiKey) y la ruta se
+        # reescribe al endpoint real de ms-ordenes.
+        - id: webhook-ordenes
+          uri: ${MS_ORDENES_URL:http://localhost:8082}
+          predicates:
+            - Path=/webhooks/ordenes
+            - Method=POST
+          filters:
+            - ApiKey
+            - SetPath=/api/ordenes
         - id: ms-autenticacion
           uri: ${MS_AUTENTICACION_URL:http://localhost:8081}
           predicates:
@@ -26,6 +37,12 @@ spring:
           predicates:
             - Path=/api/picking/**
 
-# NOTA: la validacion de JWT (RBAC) que muestra el diagrama se implementa como un GlobalFilter que
-# verifique la firma del token emitido por ms-autenticacion antes de reenviar la peticion; queda como
-# siguiente paso (ver README de este modulo).
+# NOTA: las rutas /webhooks/** son machine-to-machine (API key). Las rutas /api/** son para usuarios: la
+# validacion de su JWT (RBAC) se implementa como un GlobalFilter que verifique la firma del token emitido
+# por ms-autenticacion antes de reenviar la peticion; queda como siguiente paso (ver README).
+
+app:
+  webhook:
+    # Clave compartida con la AWS Lambda que reenvia los avisos de venta (autenticacion M2M, filtro ApiKey).
+    # En AWS vendria de Secrets Manager; en local se define con la variable de entorno WEBHOOK_API_KEY.
+    api-key: ${WEBHOOK_API_KEY:clave-local-solo-para-desarrollo}
