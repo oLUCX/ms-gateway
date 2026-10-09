@@ -1,0 +1,211 @@
+{
+  "info": {
+    "_postman_id": "abfc4d59-57a9-bb89-bc53-32f94ad4cab6",
+    "name": "BodegaNube - ms-gateway",
+    "description": "Entrada unica. Requiere los 4 microservicios corriendo. Muestra el enrutamiento y la autenticacion M2M del webhook con API key.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Webhook sin API key (401)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Responde 401\", () => pm.response.to.have.status(401));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/webhooks/ordenes",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"externalOrderId\": \"shopify-gw\",\n  \"comercioId\": \"comercio-123\",\n  \"items\": [\n    {\n      \"productoId\": \"SKU-1\",\n      \"cantidad\": 1\n    }\n  ]\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "Webhook con API key incorrecta (401)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Responde 401\", () => pm.response.to.have.status(401));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "X-Api-Key",
+            "value": "clave-adivinada"
+          }
+        ],
+        "url": "{{baseUrl}}/webhooks/ordenes",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"externalOrderId\": \"shopify-gw\",\n  \"comercioId\": \"comercio-123\",\n  \"items\": [\n    {\n      \"productoId\": \"SKU-1\",\n      \"cantidad\": 1\n    }\n  ]\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "Webhook con API key: crea la orden en ms-ordenes (201)",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.collectionVariables.set(\"externalOrderId\", \"shopify-gw-\" + Date.now());"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Responde 201\", () => pm.response.to.have.status(201));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "X-Api-Key",
+            "value": "{{apiKey}}"
+          }
+        ],
+        "url": "{{baseUrl}}/webhooks/ordenes",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"externalOrderId\": \"{{externalOrderId}}\",\n  \"comercioId\": \"comercio-123\",\n  \"items\": [\n    {\n      \"productoId\": \"SKU-1\",\n      \"cantidad\": 1\n    }\n  ]\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "Catalogo a traves del gateway (200)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Responde 200\", () => pm.response.to.have.status(200));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/api/productos"
+      }
+    },
+    {
+      "name": "Login a traves del gateway: credenciales malas (401)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Responde 401\", () => pm.response.to.have.status(401));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/auth/login",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"username\": \"nadie\",\n  \"password\": \"clave-equivocada\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "Picking a traves del gateway (200)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Responde 200\", () => pm.response.to.have.status(200));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/api/picking"
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080"
+    },
+    {
+      "key": "apiKey",
+      "value": "clave-local-solo-para-desarrollo"
+    },
+    {
+      "key": "externalOrderId",
+      "value": ""
+    }
+  ]
+}
