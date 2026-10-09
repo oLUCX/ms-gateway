@@ -1,31 +1,48 @@
 server:
-  port: 8080
+  port: ${PORT:8080}
 
 spring:
   application:
     name: ms-gateway
   cloud:
     gateway:
+      # La URI de cada microservicio se puede cambiar con una variable de entorno
+      # (en AWS sera la del balanceador interno de la VPC).
       routes:
+        # Ingesta de ventas desde la AWS Lambda (machine-to-machine). La Lambda no tiene un JWT de usuario,
+        # asi que se autentica con la API key de la cabecera X-Api-Key (filtro ApiKey) y la ruta se
+        # reescribe al endpoint real de ms-ordenes.
+        - id: webhook-ordenes
+          uri: ${MS_ORDENES_URL:http://localhost:8082}
+          predicates:
+            - Path=/webhooks/ordenes
+            - Method=POST
+          filters:
+            - ApiKey
+            - SetPath=/api/ordenes
         - id: ms-autenticacion
-          uri: http://localhost:8081
+          uri: ${MS_AUTENTICACION_URL:http://localhost:8081}
           predicates:
             - Path=/api/auth/**
         - id: ms-ordenes
-          uri: http://localhost:8082
+          uri: ${MS_ORDENES_URL:http://localhost:8082}
           predicates:
             - Path=/api/ordenes/**
         - id: ms-inventario
-          uri: http://localhost:8083
+          uri: ${MS_INVENTARIO_URL:http://localhost:8083}
           predicates:
             - Path=/api/productos/**
         - id: ms-picking-despacho
-          uri: http://localhost:8084
+          uri: ${MS_PICKING_URL:http://localhost:8084}
           predicates:
             - Path=/api/picking/**
 
-# NOTA (esqueleto minimo): este archivo define el enrutamiento interno del Spring Cloud Gateway
-# tal como aparece en el diagrama de arquitectura. La validacion de JWT (RBAC) que tambien se
-# muestra en el diagrama se implementaria como un GlobalFilter de Spring Cloud Gateway que
-# verifique la firma del token emitido por ms-autenticacion antes de reenviar la peticion; se deja
-# como siguiente paso de la version funcional completa (ver README de este modulo).
+# NOTA: las rutas /webhooks/** son machine-to-machine (API key). Las rutas /api/** son para usuarios: la
+# validacion de su JWT (RBAC) se implementa como un GlobalFilter que verifique la firma del token emitido
+# por ms-autenticacion antes de reenviar la peticion; queda como siguiente paso (ver README).
+
+app:
+  webhook:
+    # Clave compartida con la AWS Lambda que reenvia los avisos de venta (autenticacion M2M, filtro ApiKey).
+    # En AWS vendria de Secrets Manager; en local se define con la variable de entorno WEBHOOK_API_KEY.
+    api-key: ${WEBHOOK_API_KEY:clave-local-solo-para-desarrollo}

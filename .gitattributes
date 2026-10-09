@@ -1,0 +1,3 @@
+# Fin de linea fijo para los scripts del Maven Wrapper, sin importar la configuracion de Git de cada PC
+/mvnw text eol=lf
+*.cmd text eol=crlf
