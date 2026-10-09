@@ -29,3 +29,9 @@ spring:
 # NOTA: la validacion de JWT (RBAC) que muestra el diagrama se implementa como un GlobalFilter que
 # verifique la firma del token emitido por ms-autenticacion antes de reenviar la peticion; queda como
 # siguiente paso (ver README de este modulo).
+
+app:
+  webhook:
+    # Clave compartida con la AWS Lambda que reenvia los avisos de venta (autenticacion M2M, filtro ApiKey).
+    # En AWS vendria de Secrets Manager; en local se define con la variable de entorno WEBHOOK_API_KEY.
+    api-key: ${WEBHOOK_API_KEY:clave-local-solo-para-desarrollo}
